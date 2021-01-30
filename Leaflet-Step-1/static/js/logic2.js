@@ -19,62 +19,87 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 
 // Create functions for marker size and color
 function markerSize(magnitude) {
-    return Math.pow(magnitude, 1.5)
+    return Math.pow(magnitude, 1.8)
+    // return magnitude * 2.5
 }
 
-// TO DO: FIGURE OUT WHAT NEEDS TO BE DONE WITH DEPTH TO MAKE IT USABLE AND CONVERT TO COLOR
 function markerColor(depth) {
-    return (depth)
+    var color;
+    if (depth < 5) {
+        color = "#7eff38";
+    }
+    else if (depth >= 5 && depth <20) {
+        color = "#f9ff52";
+    }
+    else if (depth >= 20 && depth <50) {
+        color = "#f5932a";
+    }
+    else if (depth >= 50) {
+        color = "#f51911";
+    }
+    return (color)
 }
 
 // Get the data from the queryUrl
 d3.json(queryUrl, function(data) {
     var earthquakes = data.features;
+    var updateTime = data.metadata.generated;
     console.log(earthquakes);
+    console.log(updateTime);
 
     // Loop through the quakes and create a marker sized on magnitude and colored on depth
-    // RIGHT NOW COLORS ARE HARD-CODED - NEED TO MAKE IT DYNAMIC BASED ON DEPTH
     earthquakes.forEach(function(quake) {
         if (quake.properties.mag < 2) {
             L.circleMarker([quake.geometry.coordinates[1], quake.geometry.coordinates[0]], {
                 radius: markerSize(quake.properties.mag),
-                fillColor: "#7eff38",
-                color: "#7eff38"
+                color: markerColor(quake.geometry.coordinates[2]),
             }).bindPopup("<h3>" + quake.properties.place +
             "</h3>" + new Date(quake.properties.time) + 
             "<br>Magnitude: " + quake.properties.mag + 
-            "<br>Depth: " + quake.geometry.coordinates[2]).addTo(myMap);
+            "<br>Depth (km): " + quake.geometry.coordinates[2]).addTo(myMap);
         }
         else if (quake.properties.mag < 4) {
             L.circleMarker([quake.geometry.coordinates[1], quake.geometry.coordinates[0]], {
                 radius: markerSize(quake.properties.mag),
-                fillColor: "#f9ff52",
-                color: "#f9ff52"
+                color: markerColor(quake.geometry.coordinates[2]),
             }).bindPopup("<h3>" + quake.properties.place +
             "</h3>" + new Date(quake.properties.time) + 
             "<br>Magnitude: " + quake.properties.mag + 
-            "<br>Depth: " + quake.geometry.coordinates[2]).addTo(myMap);
+            "<br>Depth (km): " + quake.geometry.coordinates[2]).addTo(myMap);
         }
         else if (quake.properties.mag < 5) {
             L.circleMarker([quake.geometry.coordinates[1], quake.geometry.coordinates[0]], {
                 radius: markerSize(quake.properties.mag),
-                fillColor: "#f5932a",
-                color: "#f5932a"
+                color: markerColor(quake.geometry.coordinates[2]),
             }).bindPopup("<h3>" + quake.properties.place +
             "</h3>" + new Date(quake.properties.time) + 
             "<br>Magnitude: " + quake.properties.mag + 
-            "<br>Depth: " + quake.geometry.coordinates[2]).addTo(myMap);
+            "<br>Depth (km): " + quake.geometry.coordinates[2]).addTo(myMap);
         }
         else if (quake.properties.mag >= 5 ) {
             L.circleMarker([quake.geometry.coordinates[1], quake.geometry.coordinates[0]], {
                 radius: markerSize(quake.properties.mag),
-                fillColor: "#f51911",
-                color: "#f51911"
+                color: markerColor(quake.geometry.coordinates[2]),
             }).bindPopup("<h3>" + quake.properties.place +
             "</h3>" + new Date(quake.properties.time) + 
             "<br>Magnitude: " + quake.properties.mag + 
-            "<br>Depth: " + quake.geometry.coordinates[2]).addTo(myMap);
+            "<br>Depth (km): " + quake.geometry.coordinates[2]).addTo(myMap);
         }
     });
 });
 
+// Build the legend
+var legend = L.control({ position: "bottomright" });
+
+legend.onAdd = function(myMap) {
+    var div = L.DomUtil.create("div", "legend");
+    div.innerHTML += "<h3>Depth (km):</h4>";
+    div.innerHTML += '<i style="background: #7eff38"></i><span>0 to 5</span><br>';
+    div.innerHTML += '<i style="background: #f9ff52"></i><span>5 to 20</span><br>';
+    div.innerHTML += '<i style="background: #f5932a"></i><span>20 to 50</span><br>';
+    div.innerHTML += '<i style="background: #f51911"></i><span>50+</span><br>';
+    div.innerHTML += "Circle size indicates <br>magnitude";
+    return div;
+};
+
+legend.addTo(myMap);
