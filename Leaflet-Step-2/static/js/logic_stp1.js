@@ -20,7 +20,6 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 // Create functions for marker size and color
 function markerSize(magnitude) {
     return Math.pow(magnitude, 1.8)
-    // return magnitude * 2.5
 }
 
 function markerColor(depth) {
